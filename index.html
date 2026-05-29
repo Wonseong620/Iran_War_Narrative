@@ -496,7 +496,7 @@ function renderPanel(lang) {
   metaEl.textContent =
     `${nActive}/${nodes.length} active (${nZero} zero) · ${rendEdges.length} edges` +
     (meanR != null ? ` · ⟨|r|⟩=${meanR.toFixed(2)}` : "") +
-    (meanLead != null ? ` · ⟨lead⟩=${meanLead.toFixed(1)}d` : "");
+    (meanLead != null ? ` · ⟨lead or lag⟩=${meanLead.toFixed(1)}d` : "");
 
   svg.replaceChildren();
 
