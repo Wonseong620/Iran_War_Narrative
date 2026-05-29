@@ -480,7 +480,7 @@ function renderPanel(lang) {
     Math.abs(e.r) >= corrMin && e.lead >= minLead && e.lead <= maxLead
   );
 
-  const activeNode = globalSelectedNode || globalHoverNode;
+  const activeNode = globalHoverNode || globalSelectedNode;
   const rendEdges = edgeMode === "hover" ? visEdges.filter(e => {
     if (!activeNode) return false;
     if (nodeRole === "lead") return e.s === activeNode;
@@ -680,6 +680,8 @@ controls.edgeMode.addEventListener("input", renderAll);
 controls.nodeRole.addEventListener("input", renderAll);
 
 controls.resetBtn.addEventListener("click", () => {
+  globalSelectedNode = null;
+  globalHoverNode    = null;
   LANGS.forEach(resetPositions);
   renderAll();
 });
