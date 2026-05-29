@@ -1,4 +1,4 @@
-# Iran War Narrative — Cross-Lingual Media Dataset
+# Iran War Narrative — Multi-Lingual Media Dataset
 
 A cross-lingual media-narrative dataset and lead-lag network visualization for the
 2026 Iran crisis, covering news in **English, Persian, Arabic, and Chinese**.
