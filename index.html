@@ -157,6 +157,8 @@
     <h1>2026 Iran War &mdash; Lead-Lag Networks &mdash; All 9 Economic Sub-topics &mdash; 4 Languages</h1>
     <div class="summary-bar" id="summaryBar">
       <span><span class="slbl">Edges shown</span><span class="sval" id="sumEdges">&mdash;</span></span>
+      <span><span class="slbl">&#x27E8;|r|&#x27E9;</span><span class="sval" id="sumR">&mdash;</span></span>
+      <span><span class="slbl">&#x27E8;lead or lag&#x27E9;</span><span class="sval" id="sumLead">&mdash;</span></span>
     </div>
     <div class="controls">
       <div class="ctrl-group" style="min-width:200px">
@@ -650,16 +652,28 @@ function renderPanel(lang) {
     nodeLayer.appendChild(g);
   });
   svg.appendChild(nodeLayer);
-  return { edges: rendEdges.length, active: nActive };
+  return {
+    edges: rendEdges.length,
+    active: nActive,
+    sumR:    rendEdges.reduce((s, e) => s + Math.abs(e.r), 0),
+    sumLead: rendEdges.reduce((s, e) => s + e.lead, 0),
+  };
 }
 
 function renderAll() {
   document.getElementById("corrValue").textContent = parseFloat(controls.corr.value).toFixed(2);
   document.getElementById("leadMinValue").textContent = String(parseInt(controls.leadMin.value));
   document.getElementById("leadValue").textContent = String(parseInt(controls.lead.value));
-  let totEdges = 0;
-  LANGS.forEach(lang => { totEdges += renderPanel(lang).edges; });
+  let totEdges = 0, totR = 0, totLead = 0;
+  LANGS.forEach(lang => {
+    const r = renderPanel(lang);
+    totEdges += r.edges; totR += r.sumR; totLead += r.sumLead;
+  });
   document.getElementById("sumEdges").textContent = totEdges.toLocaleString();
+  document.getElementById("sumR").textContent =
+    totEdges ? (totR / totEdges).toFixed(2) : "—";
+  document.getElementById("sumLead").textContent =
+    totEdges ? (totLead / totEdges).toFixed(1) + "d" : "—";
 }
 
 controls.corr.addEventListener("input",     renderAll);
