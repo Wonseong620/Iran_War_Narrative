@@ -1,0 +1,762 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>2026 Iran War — Lead-Lag Networks — All 9 Economic Sub-topics — 4 Languages</title>
+  <style>
+    :root {
+      --blue: #0072bd;
+      --ink: #111;
+      --muted: #5d6670;
+      --line: #d8dde3;
+      --panel: #f7f9fb;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      color: var(--ink);
+      background: #fff;
+    }
+    .app {
+      min-height: 100vh;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+    }
+    header {
+      padding: 14px 24px 12px;
+      border-bottom: 1px solid var(--line);
+      background: white;
+    }
+    h1 {
+      margin: 0 0 10px;
+      font-size: 20px;
+      line-height: 1.15;
+      font-weight: 800;
+    }
+    .controls {
+      display: flex; flex-wrap: wrap; gap: 14px; align-items: end;
+    }
+    .ctrl-group { display: grid; gap: 5px; min-width: 140px; }
+    label { font-size: 12px; font-weight: 700; color: #27313b; }
+    select, input[type="range"] { width: 100%; }
+    select {
+      height: 32px; border: 1px solid #b9c2cc; border-radius: 4px;
+      background: white; font-size: 14px; padding: 0 8px;
+    }
+    button {
+      height: 32px; border: 1px solid #8aa9c6; border-radius: 4px;
+      background: var(--blue); color: white; font-size: 13px;
+      font-weight: 800; cursor: pointer; padding: 0 14px;
+    }
+    button.reset-btn { background: #5d6670; border-color: #4a5560; }
+    button:hover { filter: brightness(.92); }
+    .value { color: var(--blue); font-weight: 800; font-variant-numeric: tabular-nums; }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: 1fr 1fr;
+      gap: 8px; padding: 8px; min-height: 0;
+    }
+    .panel {
+      border: 1px solid var(--line);
+      background: white;
+      display: grid;
+      grid-template-rows: auto 1fr;
+      min-height: 0; min-width: 0; overflow: hidden;
+    }
+    .panel-head {
+      padding: 6px 12px;
+      background: var(--panel);
+      border-bottom: 1px solid var(--line);
+      display: flex; justify-content: space-between; align-items: baseline;
+      gap: 12px; font-size: 12px;
+    }
+    .panel-head .lang { font-weight: 800; font-size: 16px; }
+    .panel-head .meta { color: var(--muted); font-variant-numeric: tabular-nums; font-size: 14px; }
+    .panel-svg-wrap { position: relative; min-height: 0; overflow: hidden; }
+    .panel svg {
+      width: 100%; height: 100%;
+      min-height: 320px; display: block; background: white;
+    }
+
+    .legend-bar {
+      border-top: 1px solid var(--line);
+      padding: 10px 24px;
+      background: var(--panel);
+      display: flex; flex-wrap: wrap; gap: 18px;
+      font-size: 13px; color: #27313b; align-items: center;
+    }
+    .legend-row { display: flex; align-items: center; gap: 7px; }
+    .swatch-line     { width: 32px; height: 0; border-top: 4px solid #a2142f; }
+    .swatch-line-neg { width: 32px; height: 0; border-top: 4px solid #a2142f; }
+    .swatch-dash     { width: 32px; height: 0; border-top: 3px dashed #555; }
+    .swatch-dot      { width: 14px; height: 14px; border-radius: 50%; background: #888; }
+    .swatch-dot-zero { width: 14px; height: 14px; border-radius: 50%; background: #d0d0d0; border: 1.5px dashed #999; }
+    .legend-hint     { color: var(--muted); font-size: 11px; margin-left: auto; }
+
+    .node { cursor: grab; }
+    .node.dragging { cursor: grabbing; }
+    .node circle {
+      stroke: white; stroke-width: 1.7;
+      filter: drop-shadow(0 1px 3px rgba(0,0,0,.15));
+    }
+    .node.zero circle {
+      stroke: #888; stroke-width: 1.5; stroke-dasharray: 4 3;
+      filter: none;
+    }
+    .node[data-selected="1"] circle {
+      stroke: #111; stroke-width: 3.5;
+    }
+    .node text.node-num {
+      fill: white; font-size: 22px; font-weight: 800;
+      text-anchor: middle; dominant-baseline: central;
+      pointer-events: none;
+    }
+    .node.zero text.node-num { fill: #555; font-size: 18px; }
+    .node text.node-lbl {
+      fill: #1a1a1a; font-size: 22px; font-weight: 600;
+      text-anchor: middle; pointer-events: none;
+    }
+    .node.zero text.node-lbl { fill: #6b6b6b; font-weight: 500; }
+    .edge { fill: none; stroke-linecap: round; opacity: .55; }
+    .edge-pos { stroke: #a2142f; }
+    .edge-neg { stroke: #a2142f; }
+    .edge-sim { stroke-dasharray: 6 4; opacity: .45; }
+    .edge-label {
+      font-size: 20px; font-weight: 700;
+      paint-order: stroke; stroke: white; stroke-width: 4.5px;
+      stroke-linejoin: round;
+    }
+    .edge-label-pos { fill: #a2142f; }
+    .edge-label-neg { fill: #a2142f; }
+    .tooltip {
+      position: fixed; pointer-events: none;
+      background: rgba(17,24,39,.93); color: white;
+      padding: 8px 11px; border-radius: 5px;
+      font-size: 12px; line-height: 1.45;
+      max-width: 280px; display: none; z-index: 99;
+    }
+  </style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <h1>2026 Iran War &mdash; Lead-Lag Networks &mdash; All 9 Economic Sub-topics &mdash; 4 Languages</h1>
+    <div class="controls">
+      <div class="ctrl-group" style="min-width:200px">
+        <label>|r| threshold: <span class="value" id="corrValue">0.30</span></label>
+        <input id="corr" type="range" min="0.10" max="0.95" value="0.30" step="0.01" />
+      </div>
+      <div class="ctrl-group" style="min-width:160px">
+        <label>Min lag (days): <span class="value" id="leadMinValue">0</span></label>
+        <input id="leadMin" type="range" min="0" max="14" value="0" step="1" />
+      </div>
+      <div class="ctrl-group" style="min-width:160px">
+        <label>Max lag (days): <span class="value" id="leadValue">14</span></label>
+        <input id="lead" type="range" min="0" max="14" value="14" step="1" />
+      </div>
+      <div class="ctrl-group">
+        <label>Edge display</label>
+        <select id="edgeMode">
+          <option value="all">All</option>
+          <option value="hover">Hover / selected</option>
+        </select>
+      </div>
+      <div class="ctrl-group">
+        <label>Node role (selected)</label>
+        <select id="nodeRole">
+          <option value="both">Lead + lag</option>
+          <option value="lead">Lead only</option>
+          <option value="lag">Lag only</option>
+        </select>
+      </div>
+      <div class="ctrl-group">
+        <label>&nbsp;</label>
+        <button id="resetBtn" class="reset-btn" type="button">&#8635; Reset all</button>
+      </div>
+      <div class="ctrl-group">
+        <label>&nbsp;</label>
+        <button id="download" type="button">&#8595; PNG (2&times;2)</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="grid">
+    <div class="panel" data-lang="English">
+      <div class="panel-head"><span class="lang">English (EN)</span><span class="meta" id="meta-English">&mdash;</span></div>
+      <div class="panel-svg-wrap"><svg id="svg-English" viewBox="0 140 1000 720"></svg></div>
+    </div>
+    <div class="panel" data-lang="Persian">
+      <div class="panel-head"><span class="lang">Persian (FA)</span><span class="meta" id="meta-Persian">&mdash;</span></div>
+      <div class="panel-svg-wrap"><svg id="svg-Persian" viewBox="0 140 1000 720"></svg></div>
+    </div>
+    <div class="panel" data-lang="Arabic">
+      <div class="panel-head"><span class="lang">Arabic (AR)</span><span class="meta" id="meta-Arabic">&mdash;</span></div>
+      <div class="panel-svg-wrap"><svg id="svg-Arabic" viewBox="0 140 1000 720"></svg></div>
+    </div>
+    <div class="panel" data-lang="Chinese">
+      <div class="panel-head"><span class="lang">Chinese (ZH)</span><span class="meta" id="meta-Chinese">&mdash;</span></div>
+      <div class="panel-svg-wrap"><svg id="svg-Chinese" viewBox="0 140 1000 720"></svg></div>
+    </div>
+  </div>
+
+  <div class="legend-bar">
+    <div class="legend-row"><span class="swatch-line"></span><span>Positive corr. (r &gt; 0), directed</span></div>
+    <div class="legend-row"><span class="swatch-line-neg"></span><span>Negative corr. (r &lt; 0), directed</span></div>
+    <div class="legend-row"><span class="swatch-dash"></span><span>Simultaneous (lag = 0)</span></div>
+    <div class="legend-row"><span class="swatch-dot"></span><span>Node size = article count</span></div>
+    <div class="legend-row"><span class="swatch-dot-zero"></span><span>Zero / inactive (no edges)</span></div>
+    <div class="legend-hint">Drag nodes &middot; Currency &amp; Banking fixed at 12 o&#x2019;clock &middot; v3 dataset, Jan&ndash;Apr 2026</div>
+  </div>
+</div>
+<div class="tooltip" id="tooltip"></div>
+<script>
+const DATA  = {"English":{"nodes":[{"id":"currency_banking","label":"Currency & Banking","color":"#7E2F8E","total":76,"active":31},{"id":"oil_energy","label":"Oil & Energy","color":"#D95319","total":1108,"active":87},{"id":"sanctions","label":"Sanctions","color":"#A2142F","total":95,"active":37},{"id":"transport_shipping","label":"Transport & Shipping","color":"#0072BD","total":677,"active":55},{"id":"supply_chain","label":"Supply Chain","color":"#EDB120","total":44,"active":16},{"id":"food_security","label":"Food Security","color":"#77AC30","total":48,"active":20},{"id":"macroeconomy","label":"Macroeconomy","color":"#009688","total":598,"active":58},{"id":"general_economy","label":"General Economy","color":"#4DBEEE","total":110,"active":32},{"id":"protest_strike","label":"Protest & Strike","color":"#808080","total":23,"active":14}],"edges":[{"s":"currency_banking","t":"oil_energy","lead":0,"r":0.7973},{"s":"currency_banking","t":"sanctions","lead":4,"r":0.5117},{"s":"transport_shipping","t":"currency_banking","lead":2,"r":0.7052},{"s":"currency_banking","t":"supply_chain","lead":1,"r":0.7563},{"s":"currency_banking","t":"food_security","lead":1,"r":0.6612},{"s":"macroeconomy","t":"currency_banking","lead":1,"r":0.8506},{"s":"currency_banking","t":"general_economy","lead":0,"r":0.764},{"s":"currency_banking","t":"protest_strike","lead":12,"r":0.237},{"s":"oil_energy","t":"sanctions","lead":4,"r":0.5885},{"s":"oil_energy","t":"transport_shipping","lead":0,"r":0.8293},{"s":"oil_energy","t":"supply_chain","lead":2,"r":0.7062},{"s":"food_security","t":"oil_energy","lead":1,"r":0.6459},{"s":"oil_energy","t":"macroeconomy","lead":0,"r":0.8448},{"s":"oil_energy","t":"general_economy","lead":0,"r":0.7789},{"s":"protest_strike","t":"oil_energy","lead":1,"r":0.1771},{"s":"transport_shipping","t":"sanctions","lead":3,"r":0.6705},{"s":"sanctions","t":"supply_chain","lead":1,"r":0.5353},{"s":"food_security","t":"sanctions","lead":5,"r":0.5884},{"s":"macroeconomy","t":"sanctions","lead":1,"r":0.546},{"s":"general_economy","t":"sanctions","lead":2,"r":0.5177},{"s":"protest_strike","t":"sanctions","lead":7,"r":0.3348},{"s":"transport_shipping","t":"supply_chain","lead":3,"r":0.688},{"s":"food_security","t":"transport_shipping","lead":2,"r":0.7192},{"s":"transport_shipping","t":"macroeconomy","lead":2,"r":0.7905},{"s":"general_economy","t":"transport_shipping","lead":2,"r":0.811},{"s":"protest_strike","t":"transport_shipping","lead":3,"r":0.1931},{"s":"supply_chain","t":"food_security","lead":0,"r":0.7695},{"s":"macroeconomy","t":"supply_chain","lead":2,"r":0.8051},{"s":"supply_chain","t":"general_economy","lead":0,"r":0.7702},{"s":"supply_chain","t":"protest_strike","lead":14,"r":0.1947},{"s":"macroeconomy","t":"food_security","lead":2,"r":0.7608},{"s":"general_economy","t":"food_security","lead":2,"r":0.6784},{"s":"protest_strike","t":"food_security","lead":4,"r":0.2028},{"s":"macroeconomy","t":"general_economy","lead":0,"r":0.8528},{"s":"macroeconomy","t":"protest_strike","lead":14,"r":0.3017},{"s":"general_economy","t":"protest_strike","lead":14,"r":0.1786}]},"Persian":{"nodes":[{"id":"currency_banking","label":"Currency & Banking","color":"#7E2F8E","total":43,"active":31},{"id":"oil_energy","label":"Oil & Energy","color":"#D95319","total":154,"active":67},{"id":"sanctions","label":"Sanctions","color":"#A2142F","total":60,"active":38},{"id":"transport_shipping","label":"Transport & Shipping","color":"#0072BD","total":99,"active":48},{"id":"supply_chain","label":"Supply Chain","color":"#EDB120","total":8,"active":8},{"id":"food_security","label":"Food Security","color":"#77AC30","total":11,"active":11},{"id":"macroeconomy","label":"Macroeconomy","color":"#009688","total":44,"active":36},{"id":"general_economy","label":"General Economy","color":"#4DBEEE","total":48,"active":34},{"id":"protest_strike","label":"Protest & Strike","color":"#808080","total":25,"active":16}],"edges":[{"s":"oil_energy","t":"currency_banking","lead":8,"r":-0.2746},{"s":"currency_banking","t":"sanctions","lead":12,"r":0.4163},{"s":"currency_banking","t":"transport_shipping","lead":11,"r":-0.2561},{"s":"currency_banking","t":"macroeconomy","lead":4,"r":0.4461},{"s":"currency_banking","t":"general_economy","lead":7,"r":0.2756},{"s":"currency_banking","t":"protest_strike","lead":0,"r":0.364},{"s":"sanctions","t":"oil_energy","lead":7,"r":-0.2707},{"s":"oil_energy","t":"transport_shipping","lead":13,"r":0.4},{"s":"macroeconomy","t":"oil_energy","lead":6,"r":-0.238},{"s":"general_economy","t":"oil_energy","lead":2,"r":-0.1464},{"s":"oil_energy","t":"protest_strike","lead":8,"r":0.1727},{"s":"sanctions","t":"transport_shipping","lead":10,"r":-0.2217},{"s":"macroeconomy","t":"sanctions","lead":8,"r":0.3732},{"s":"sanctions","t":"general_economy","lead":6,"r":0.2812},{"s":"protest_strike","t":"sanctions","lead":6,"r":0.3319},{"s":"macroeconomy","t":"transport_shipping","lead":6,"r":-0.2246},{"s":"general_economy","t":"transport_shipping","lead":10,"r":-0.166},{"s":"transport_shipping","t":"protest_strike","lead":12,"r":0.235},{"s":"general_economy","t":"macroeconomy","lead":5,"r":0.2871},{"s":"macroeconomy","t":"protest_strike","lead":2,"r":0.6051},{"s":"protest_strike","t":"general_economy","lead":7,"r":0.3717}]},"Arabic":{"nodes":[{"id":"currency_banking","label":"Currency & Banking","color":"#7E2F8E","total":162,"active":67},{"id":"oil_energy","label":"Oil & Energy","color":"#D95319","total":1224,"active":111},{"id":"sanctions","label":"Sanctions","color":"#A2142F","total":260,"active":77},{"id":"transport_shipping","label":"Transport & Shipping","color":"#0072BD","total":743,"active":85},{"id":"supply_chain","label":"Supply Chain","color":"#EDB120","total":19,"active":13},{"id":"food_security","label":"Food Security","color":"#77AC30","total":22,"active":19},{"id":"macroeconomy","label":"Macroeconomy","color":"#009688","total":383,"active":91},{"id":"general_economy","label":"General Economy","color":"#4DBEEE","total":600,"active":79},{"id":"protest_strike","label":"Protest & Strike","color":"#808080","total":47,"active":18}],"edges":[{"s":"currency_banking","t":"oil_energy","lead":9,"r":-0.2561},{"s":"currency_banking","t":"sanctions","lead":0,"r":0.5},{"s":"currency_banking","t":"transport_shipping","lead":1,"r":0.3289},{"s":"currency_banking","t":"food_security","lead":11,"r":0.2142},{"s":"currency_banking","t":"macroeconomy","lead":0,"r":0.5241},{"s":"currency_banking","t":"general_economy","lead":6,"r":0.4386},{"s":"currency_banking","t":"protest_strike","lead":9,"r":-0.1852},{"s":"sanctions","t":"oil_energy","lead":11,"r":-0.2198},{"s":"oil_energy","t":"transport_shipping","lead":0,"r":0.5399},{"s":"food_security","t":"oil_energy","lead":3,"r":0.4368},{"s":"oil_energy","t":"macroeconomy","lead":14,"r":0.6086},{"s":"oil_energy","t":"general_economy","lead":9,"r":0.3733},{"s":"protest_strike","t":"oil_energy","lead":7,"r":-0.2406},{"s":"sanctions","t":"transport_shipping","lead":11,"r":-0.192},{"s":"food_security","t":"sanctions","lead":9,"r":-0.1747},{"s":"sanctions","t":"macroeconomy","lead":10,"r":-0.2186},{"s":"sanctions","t":"general_economy","lead":6,"r":0.1902},{"s":"protest_strike","t":"sanctions","lead":11,"r":0.4031},{"s":"food_security","t":"transport_shipping","lead":8,"r":0.3384},{"s":"macroeconomy","t":"transport_shipping","lead":4,"r":0.6046},{"s":"transport_shipping","t":"general_economy","lead":5,"r":0.7154},{"s":"protest_strike","t":"transport_shipping","lead":14,"r":-0.1987},{"s":"food_security","t":"macroeconomy","lead":10,"r":0.3734},{"s":"food_security","t":"general_economy","lead":13,"r":0.2727},{"s":"protest_strike","t":"food_security","lead":14,"r":-0.1518},{"s":"macroeconomy","t":"general_economy","lead":9,"r":0.4132},{"s":"macroeconomy","t":"protest_strike","lead":2,"r":-0.2903},{"s":"general_economy","t":"protest_strike","lead":13,"r":-0.1547}]},"Chinese":{"nodes":[{"id":"currency_banking","label":"Currency & Banking","color":"#7E2F8E","total":168,"active":68},{"id":"oil_energy","label":"Oil & Energy","color":"#D95319","total":1691,"active":108},{"id":"sanctions","label":"Sanctions","color":"#A2142F","total":270,"active":60},{"id":"transport_shipping","label":"Transport & Shipping","color":"#0072BD","total":1124,"active":78},{"id":"supply_chain","label":"Supply Chain","color":"#EDB120","total":25,"active":18},{"id":"food_security","label":"Food Security","color":"#77AC30","total":17,"active":12},{"id":"macroeconomy","label":"Macroeconomy","color":"#009688","total":537,"active":102},{"id":"general_economy","label":"General Economy","color":"#4DBEEE","total":120,"active":62},{"id":"protest_strike","label":"Protest & Strike","color":"#808080","total":45,"active":14}],"edges":[{"s":"currency_banking","t":"oil_energy","lead":9,"r":-0.1757},{"s":"sanctions","t":"currency_banking","lead":2,"r":0.3703},{"s":"currency_banking","t":"transport_shipping","lead":4,"r":0.1711},{"s":"supply_chain","t":"currency_banking","lead":14,"r":0.2976},{"s":"macroeconomy","t":"currency_banking","lead":13,"r":0.2934},{"s":"currency_banking","t":"general_economy","lead":9,"r":-0.2346},{"s":"currency_banking","t":"protest_strike","lead":12,"r":0.3505},{"s":"sanctions","t":"oil_energy","lead":13,"r":-0.1717},{"s":"oil_energy","t":"transport_shipping","lead":1,"r":0.5868},{"s":"oil_energy","t":"supply_chain","lead":9,"r":0.4066},{"s":"oil_energy","t":"macroeconomy","lead":14,"r":0.3435},{"s":"oil_energy","t":"general_economy","lead":0,"r":0.2248},{"s":"protest_strike","t":"oil_energy","lead":10,"r":-0.2073},{"s":"sanctions","t":"transport_shipping","lead":3,"r":0.1953},{"s":"supply_chain","t":"sanctions","lead":13,"r":0.2307},{"s":"sanctions","t":"macroeconomy","lead":1,"r":0.3065},{"s":"sanctions","t":"general_economy","lead":0,"r":0.2402},{"s":"protest_strike","t":"sanctions","lead":12,"r":0.5994},{"s":"supply_chain","t":"transport_shipping","lead":12,"r":0.361},{"s":"transport_shipping","t":"macroeconomy","lead":13,"r":0.3646},{"s":"transport_shipping","t":"general_economy","lead":12,"r":-0.1438},{"s":"transport_shipping","t":"protest_strike","lead":14,"r":0.3055},{"s":"macroeconomy","t":"supply_chain","lead":1,"r":0.2456},{"s":"general_economy","t":"supply_chain","lead":9,"r":0.2457},{"s":"protest_strike","t":"supply_chain","lead":13,"r":-0.103},{"s":"general_economy","t":"macroeconomy","lead":13,"r":0.1848},{"s":"macroeconomy","t":"protest_strike","lead":3,"r":-0.1372},{"s":"protest_strike","t":"general_economy","lead":13,"r":0.1728}]}};
+const LANGS = ["English", "Persian", "Arabic", "Chinese"];
+
+const tooltip = document.getElementById("tooltip");
+const controls = {
+  corr:     document.getElementById("corr"),
+  leadMin:  document.getElementById("leadMin"),
+  lead:     document.getElementById("lead"),
+  edgeMode: document.getElementById("edgeMode"),
+  nodeRole: document.getElementById("nodeRole"),
+  resetBtn: document.getElementById("resetBtn"),
+  download: document.getElementById("download"),
+};
+
+// ── Radial layout: Currency & Banking pinned at 12 o'clock ────────────────────
+const RADIUS = 270;
+const CX = 500, CY = 500;
+const PIN_ID = "currency_banking";
+const radialCache = {};
+
+function computeRadialPositions(lang) {
+  const payload = DATA[lang];
+  const nodes   = payload.nodes;
+  const edges   = payload.edges;
+  const score   = {}, outCnt = {}, inCnt = {};
+  nodes.forEach(n => { score[n.id]=0; outCnt[n.id]=0; inCnt[n.id]=0; });
+  edges.forEach(e => {
+    const w = e.lead * Math.abs(e.r);
+    score[e.s] += w; score[e.t] -= w;
+    outCnt[e.s]++; inCnt[e.t]++;
+  });
+
+  // All nodes except the pinned one, sorted by score desc
+  const rest = nodes.filter(n => n.id !== PIN_ID).sort((a, b) => {
+    const d = score[b.id] - score[a.id];
+    if (Math.abs(d) > 1e-6) return d;
+    return (outCnt[b.id] - inCnt[b.id]) - (outCnt[a.id] - inCnt[a.id]);
+  });
+
+  const n   = nodes.length;
+  const pos = {};
+  // Pin Currency & Banking at 12 o'clock
+  pos[PIN_ID] = { x: CX, y: CY - RADIUS };
+  // Distribute remaining nodes evenly around the rest of the circle
+  for (let i = 0; i < rest.length; i++) {
+    const angle = -Math.PI/2 + ((i + 1) / n) * 2 * Math.PI;
+    pos[rest[i].id] = {
+      x: CX + RADIUS * Math.cos(angle),
+      y: CY + RADIUS * Math.sin(angle),
+    };
+  }
+  return pos;
+}
+
+function getRadialPos(lang) {
+  if (!radialCache[lang]) radialCache[lang] = computeRadialPositions(lang);
+  return radialCache[lang];
+}
+
+const dragPositions = {};
+function getPos(lang, nodeId) {
+  if (dragPositions[lang] && dragPositions[lang][nodeId])
+    return dragPositions[lang][nodeId];
+  const radial = getRadialPos(lang);
+  return radial[nodeId] || {x: CX, y: CY};
+}
+function setPos(lang, nodeId, x, y) {
+  if (!dragPositions[lang]) dragPositions[lang] = {};
+  dragPositions[lang][nodeId] = {x, y};
+}
+function resetPositions(lang) { if (dragPositions[lang]) delete dragPositions[lang]; }
+
+// Global selection state — applies to ALL panels in sync.
+// Per-panel state only tracks transient drag flag.
+let globalSelectedNode = null;
+let globalHoverNode    = null;
+
+const panelState = {};
+LANGS.forEach(lang => {
+  panelState[lang] = {
+    svg: document.getElementById(`svg-${lang}`),
+    isDragging: false,
+  };
+});
+
+function el(name, attrs = {}, text = "") {
+  const node = document.createElementNS("http://www.w3.org/2000/svg", name);
+  for (const [k, v] of Object.entries(attrs)) node.setAttribute(k, v);
+  if (text) node.textContent = text;
+  return node;
+}
+function svgPoint(svg, evt) {
+  const pt = svg.createSVGPoint();
+  pt.x = evt.clientX; pt.y = evt.clientY;
+  return pt.matrixTransform(svg.getScreenCTM().inverse());
+}
+function curvedPath(a, b, bend=0.15) {
+  const dx = b.x - a.x, dy = b.y - a.y;
+  const mx = (a.x + b.x)/2, my = (a.y + b.y)/2;
+  const len = Math.max(1, Math.hypot(dx, dy));
+  const bv  = Math.min(80, len * bend);
+  return `M ${a.x} ${a.y} Q ${mx - dy/len*bv} ${my + dx/len*bv} ${b.x} ${b.y}`;
+}
+function trimPt(a, b, rA, rB) {
+  const dx = b.x - a.x, dy = b.y - a.y;
+  const len = Math.max(1, Math.hypot(dx, dy));
+  return {
+    a: {x: a.x + dx/len*(rA+3), y: a.y + dy/len*(rA+3)},
+    b: {x: b.x - dx/len*(rB+3), y: b.y - dy/len*(rB+3)},
+  };
+}
+function nodeRadius(total, maxTotal) {
+  return 14 + 32 * Math.sqrt(total / Math.max(maxTotal, 1));
+}
+
+function placeEdgeLabel(raw, bendMag, fraction) {
+  fraction = fraction == null ? 0.65 : fraction;
+  const dx = raw.b.x - raw.a.x;
+  const dy = raw.b.y - raw.a.y;
+  const len = Math.max(1, Math.hypot(dx, dy));
+  const bv  = Math.min(80, len * bendMag);
+  const cx0 = (raw.a.x + raw.b.x)/2;
+  const cy0 = (raw.a.y + raw.b.y)/2;
+  const cx  = cx0 - dy/len * bv;
+  const cy  = cy0 + dx/len * bv;
+  return { x: cx0 + fraction*(cx - cx0), y: cy0 + fraction*(cy - cy0) };
+}
+
+function avoidLabelCollisions(items, opts) {
+  opts = opts || {};
+  const iterations = opts.iterations || 22;
+  const padding    = opts.padding != null ? opts.padding : 3;
+  const maxDrift   = opts.maxDrift || 38;
+  const step       = opts.step || 0.8;
+  for (let it = 0; it < iterations; it++) {
+    let any = false;
+    for (let i = 0; i < items.length; i++) {
+      for (let j = i+1; j < items.length; j++) {
+        const a = items[i], b = items[j];
+        const wA = (a.text.length+0.5) * a.fontSize * 0.5;
+        const hA =  a.fontSize * 1.05;
+        const wB = (b.text.length+0.5) * b.fontSize * 0.5;
+        const hB =  b.fontSize * 1.05;
+        const dx = b.x - a.x, dy = b.y - a.y;
+        const ovx = (wA+wB)/2 + padding - Math.abs(dx);
+        const ovy = (hA+hB)/2 + padding - Math.abs(dy);
+        if (ovx > 0 && ovy > 0) {
+          let nx, ny;
+          const dist = Math.hypot(dx, dy);
+          if (dist < 0.5) { nx = Math.random()-0.5; ny = Math.random()-0.5; }
+          else            { nx = dx/dist;            ny = dy/dist; }
+          const pushX = nx*step, pushY = ny*step;
+          const da = Math.hypot(a.x - a.ox, a.y - a.oy);
+          const db = Math.hypot(b.x - b.ox, b.y - b.oy);
+          if (da < maxDrift) { a.x -= pushX; a.y -= pushY; any = true; }
+          if (db < maxDrift) { b.x += pushX; b.y += pushY; any = true; }
+        }
+      }
+    }
+    if (!any) break;
+  }
+  items.forEach(l => {
+    l.element.setAttribute('x', l.x);
+    l.element.setAttribute('y', l.y);
+  });
+}
+
+function showTip(evt, html) {
+  tooltip.innerHTML = html;
+  tooltip.style.display = "block";
+  tooltip.style.left = `${evt.clientX + 16}px`;
+  tooltip.style.top  = `${evt.clientY + 14}px`;
+}
+function hideTip() { tooltip.style.display = "none"; }
+
+function moveDrag(lang, nodeId, nx, ny) {
+  const svg = panelState[lang].svg;
+  const nodes = DATA[lang].nodes;
+  const maxTot = Math.max(...nodes.filter(n => n.total > 0).map(n => n.total), 1);
+  const node = nodes.find(n => n.id === nodeId);
+  if (!node) return;
+  const isZero = (node.total === 0);
+
+  const nodeG = svg.querySelector(`.node[data-id="${nodeId}"]`);
+  if (nodeG) {
+    nodeG.querySelector('circle').setAttribute('cx', nx);
+    nodeG.querySelector('circle').setAttribute('cy', ny);
+    const texts = nodeG.querySelectorAll('text');
+    if (texts[0]) { texts[0].setAttribute('x', nx); texts[0].setAttribute('y', ny); }
+    if (texts[1]) {
+      const r    = isZero ? 18 : nodeRadius(node.total, maxTot);
+      const lblY = ny > 500 ? ny + r + 26 : ny - r - 28;
+      const anch = nx < 130 ? "start" : nx > 870 ? "end" : "middle";
+      const lblX = nx < 130 ? nx - r : nx > 870 ? nx + r : nx;
+      texts[1].setAttribute('x', lblX);
+      texts[1].setAttribute('y', lblY);
+      texts[1].setAttribute('text-anchor', anch);
+    }
+  }
+
+  if (isZero) return;  // zero nodes have no edges
+
+  const corrMin = parseFloat(controls.corr.value);
+  let   minLead = parseInt(controls.leadMin.value);
+  let   maxLead = parseInt(controls.lead.value);
+  if (minLead > maxLead) { const t = minLead; minLead = maxLead; maxLead = t; }
+  DATA[lang].edges.forEach(edge => {
+    if (edge.s !== nodeId && edge.t !== nodeId) return;
+    if (Math.abs(edge.r) < corrMin || edge.lead < minLead || edge.lead > maxLead) return;
+    const pairKey = [edge.s, edge.t].sort().join("|");
+    const bend = (pairKey === [edge.s, edge.t].join("|")) ? 0.15 : -0.15;
+    const posA = getPos(lang, edge.s);
+    const posB = getPos(lang, edge.t);
+    const nA = nodes.find(n => n.id === edge.s) || {total:0};
+    const nB = nodes.find(n => n.id === edge.t) || {total:0};
+    const raw = trimPt(posA, posB,
+                       nodeRadius(nA.total, maxTot),
+                       nodeRadius(nB.total, maxTot));
+    const d = curvedPath(raw.a, raw.b, Math.abs(bend));
+    const path = svg.querySelector(`path[data-s="${edge.s}"][data-t="${edge.t}"]`);
+    if (path) path.setAttribute('d', d);
+    const lbl = svg.querySelector(`text[data-s="${edge.s}"][data-t="${edge.t}"]`);
+    if (lbl) {
+      const lp = placeEdgeLabel(raw, Math.abs(bend), 0.65);
+      lbl.setAttribute('x', lp.x);
+      lbl.setAttribute('y', lp.y);
+    }
+  });
+}
+
+function renderPanel(lang) {
+  const state    = panelState[lang];
+  const svg      = state.svg;
+  const corrMin  = parseFloat(controls.corr.value);
+  let   minLead  = parseInt(controls.leadMin.value);
+  let   maxLead  = parseInt(controls.lead.value);
+  if (minLead > maxLead) { const t = minLead; minLead = maxLead; maxLead = t; }
+  const edgeMode = controls.edgeMode.value;
+  const nodeRole = controls.nodeRole.value;
+
+  const payload  = DATA[lang];
+  const nodes    = payload.nodes;
+  const activeNodes = nodes.filter(n => n.total > 0);
+  const maxTotal = Math.max(...activeNodes.map(n => n.total), 1);
+
+  const pos = {};
+  nodes.forEach(n => { pos[n.id] = getPos(lang, n.id); });
+
+  const visEdges = payload.edges.filter(e =>
+    Math.abs(e.r) >= corrMin && e.lead >= minLead && e.lead <= maxLead
+  );
+
+  const activeNode = globalSelectedNode || globalHoverNode;
+  const rendEdges = edgeMode === "hover" ? visEdges.filter(e => {
+    if (!activeNode) return false;
+    if (nodeRole === "lead") return e.s === activeNode;
+    if (nodeRole === "lag")  return e.t === activeNode;
+    return e.s === activeNode || e.t === activeNode;
+  }) : visEdges;
+
+  const linkedSet = new Set();
+  rendEdges.forEach(e => { linkedSet.add(e.s); linkedSet.add(e.t); });
+  const meanR    = rendEdges.length ? (rendEdges.reduce((s,e)=>s+Math.abs(e.r),0)/rendEdges.length) : null;
+  const meanLead = rendEdges.length ? (rendEdges.reduce((s,e)=>s+e.lead,0)/rendEdges.length) : null;
+  const nActive  = activeNodes.length;
+  const nZero    = nodes.length - nActive;
+  const metaEl = document.getElementById(`meta-${lang}`);
+  metaEl.textContent =
+    `${nActive}/${nodes.length} active (${nZero} zero) · ${rendEdges.length} edges` +
+    (meanR != null ? ` · ⟨|r|⟩=${meanR.toFixed(2)}` : "") +
+    (meanLead != null ? ` · ⟨lead⟩=${meanLead.toFixed(1)}d` : "");
+
+  svg.replaceChildren();
+
+  const defs = el("defs");
+  [["arrow-pos","#a2142f"],["arrow-neg","#a2142f"]].forEach(([id, col]) => {
+    const m = el("marker", { id: `${id}-${lang}`, viewBox:"0 0 10 10", refX:"9", refY:"5",
+      markerWidth:"5", markerHeight:"5", orient:"auto-start-reverse" });
+    m.appendChild(el("path", { d:"M 0 0 L 10 5 L 0 10 z", fill:col, opacity:"0.72" }));
+    defs.appendChild(m);
+  });
+  svg.appendChild(defs);
+
+  // Edges (only between active nodes; zero nodes naturally not connected)
+  const edgeLayer = el("g"), lblLayer = el("g");
+  const labelItems = [];
+  rendEdges.forEach(edge => {
+    if (!pos[edge.s] || !pos[edge.t]) return;
+    const isSim = edge.lead === 0;
+    const isPos = edge.r >= 0;
+    const lw = (0.8 + 4.5 * Math.abs(edge.r)).toFixed(2);
+    const markId = `${isPos ? "arrow-pos" : "arrow-neg"}-${lang}`;
+    const rA = nodeRadius((nodes.find(n=>n.id===edge.s)||{total:0}).total, maxTotal);
+    const rB = nodeRadius((nodes.find(n=>n.id===edge.t)||{total:0}).total, maxTotal);
+    const pairKey = [edge.s, edge.t].sort().join("|");
+    const bend = (pairKey === [edge.s, edge.t].join("|")) ? 0.15 : -0.15;
+    const raw = trimPt(pos[edge.s], pos[edge.t], rA, rB);
+    const d = curvedPath(raw.a, raw.b, Math.abs(bend));
+    const cls = "edge" + (isPos ? " edge-pos" : " edge-neg") + (isSim ? " edge-sim" : "");
+    const path = el("path", {
+      d, class: cls,
+      "stroke-width": lw,
+      "marker-end": isSim ? "" : `url(#${markId})`,
+      "data-s": edge.s, "data-t": edge.t,
+    });
+    path.addEventListener("mousemove", evt =>
+      showTip(evt, `<b>${(nodes.find(n=>n.id===edge.s)||{}).label}</b> → <b>${(nodes.find(n=>n.id===edge.t)||{}).label}</b><br>r = ${edge.r>=0?"+":""}${edge.r.toFixed(3)}<br>lead = +${edge.lead}d`));
+    path.addEventListener("mouseleave", hideTip);
+    edgeLayer.appendChild(path);
+
+    const lp  = placeEdgeLabel(raw, Math.abs(bend), 0.65);
+    const lbl = isSim ? `${edge.r>=0?"+":""}${edge.r.toFixed(2)}` : `+${edge.lead}d`;
+    const lt  = el("text", {
+      x: lp.x, y: lp.y,
+      class: `edge-label ${isPos ? "edge-label-pos" : "edge-label-neg"}`,
+      "data-s": edge.s, "data-t": edge.t,
+    }, lbl);
+    lblLayer.appendChild(lt);
+    labelItems.push({ x: lp.x, y: lp.y, ox: lp.x, oy: lp.y,
+                      text: lbl, fontSize: 20, element: lt });
+  });
+  svg.appendChild(edgeLayer);
+  svg.appendChild(lblLayer);
+  avoidLabelCollisions(labelItems);
+
+  // Nodes (all 9; zero-count rendered grey/dashed)
+  const nodeLayer = el("g");
+  nodes.forEach(node => {
+    const p = pos[node.id];
+    if (!p) return;
+    const isZero = (node.total === 0);
+    const radius = isZero ? 18 : nodeRadius(node.total, maxTotal);
+    const isSelected = globalSelectedNode === node.id;
+    const isLinked   = linkedSet.has(node.id);
+    const opacity    = (edgeMode === "hover" && activeNode && !isLinked && !isZero) ? "0.35" :
+                       (isZero ? "0.7" : "1");
+
+    const g = el("g", {
+      class: "node" + (isZero ? " zero" : ""),
+      opacity, "data-id": node.id,
+    });
+    g.setAttribute("data-selected", isSelected ? "1" : "0");
+    g.appendChild(el("circle", {
+      cx: p.x, cy: p.y, r: radius.toFixed(1),
+      fill: isZero ? "#e8e8e8" : node.color,
+    }));
+    g.appendChild(el("text", { x: p.x, y: p.y, class:"node-num" },
+                    String(node.total)));
+
+    const lblY = p.y > 500 ? p.y + radius + 26 : p.y - radius - 28;
+    const anch = p.x < 130 ? "start" : p.x > 870 ? "end" : "middle";
+    const lblX = p.x < 130 ? p.x - radius : p.x > 870 ? p.x + radius : p.x;
+    g.appendChild(el("text", {
+      x: lblX, y: lblY, class:"node-lbl",
+      "text-anchor": anch, "dominant-baseline": "hanging",
+    }, node.label));
+
+    g.addEventListener("mouseenter", () => {
+      if (!state.isDragging) { globalHoverNode = node.id; renderAll(); }
+    });
+    g.addEventListener("mouseleave", () => {
+      if (!state.isDragging) { globalHoverNode = null; renderAll(); }
+      hideTip();
+    });
+    g.addEventListener("mousemove", evt => {
+      if (!state.isDragging) {
+        const tip = isZero
+          ? `<b>${node.label}</b><br><i>No articles in this language</i>`
+          : `<b>${node.label}</b><br>Articles: ${node.total.toLocaleString()}<br>Active days: ${node.active}`;
+        showTip(evt, tip);
+      }
+    });
+
+    g.addEventListener("mousedown", e => {
+      if (e.button !== 0) return;
+      e.preventDefault(); e.stopPropagation();
+      const svgStart = svgPoint(svg, e);
+      const origPos  = getPos(lang, node.id);
+      const origX = origPos.x, origY = origPos.y;
+      let wasDragged = false;
+      state.isDragging = true;
+      document.body.style.userSelect = "none";
+      document.body.style.cursor = "grabbing";
+      g.classList.add("dragging");
+      hideTip();
+
+      function onMove(e2) {
+        const pt = svgPoint(svg, e2);
+        const dx = pt.x - svgStart.x, dy = pt.y - svgStart.y;
+        if (!wasDragged && (Math.abs(dx) > 3 || Math.abs(dy) > 3)) wasDragged = true;
+        if (!wasDragged) return;
+        const nx = Math.max(30, Math.min(970, origX + dx));
+        const ny = Math.max(30, Math.min(970, origY + dy));
+        setPos(lang, node.id, nx, ny);
+        moveDrag(lang, node.id, nx, ny);
+      }
+      function onUp() {
+        state.isDragging = false;
+        document.body.style.userSelect = "";
+        document.body.style.cursor = "";
+        g.classList.remove("dragging");
+        document.removeEventListener("mousemove", onMove);
+        document.removeEventListener("mouseup",   onUp);
+        if (wasDragged) {
+          g.addEventListener("click", function stopOnce(e3) {
+            e3.stopPropagation();
+            g.removeEventListener("click", stopOnce, true);
+          }, true);
+          renderPanel(lang);
+        }
+      }
+      document.addEventListener("mousemove", onMove);
+      document.addEventListener("mouseup", onUp);
+    });
+
+    g.addEventListener("click", () => {
+      if (state.isDragging) return;
+      globalSelectedNode = globalSelectedNode === node.id ? null : node.id;
+      renderAll();
+    });
+
+    nodeLayer.appendChild(g);
+  });
+  svg.appendChild(nodeLayer);
+}
+
+function renderAll() {
+  document.getElementById("corrValue").textContent = parseFloat(controls.corr.value).toFixed(2);
+  document.getElementById("leadMinValue").textContent = String(parseInt(controls.leadMin.value));
+  document.getElementById("leadValue").textContent = String(parseInt(controls.lead.value));
+  LANGS.forEach(renderPanel);
+}
+
+controls.corr.addEventListener("input",     renderAll);
+controls.leadMin.addEventListener("input",  renderAll);
+controls.lead.addEventListener("input",     renderAll);
+controls.edgeMode.addEventListener("input", renderAll);
+controls.nodeRole.addEventListener("input", renderAll);
+
+controls.resetBtn.addEventListener("click", () => {
+  LANGS.forEach(resetPositions);
+  renderAll();
+});
+
+controls.download.addEventListener("click", () => {
+  const NS = "http://www.w3.org/2000/svg";
+  const PW = 1000, PH = 720;
+  const PAD = 30, HEADER = 110, INNER_HEAD = 60;
+  const W = PAD + PW + PAD + PW + PAD;
+  const H = PAD + HEADER + (PAD + INNER_HEAD + PH) * 2 + PAD;
+
+  const master = document.createElementNS(NS, "svg");
+  master.setAttribute("xmlns", NS);
+  master.setAttribute("width",  W);
+  master.setAttribute("height", H);
+  master.setAttribute("viewBox", `0 0 ${W} ${H}`);
+
+  const bg = document.createElementNS(NS, "rect");
+  bg.setAttribute("x", 0); bg.setAttribute("y", 0);
+  bg.setAttribute("width", W); bg.setAttribute("height", H);
+  bg.setAttribute("fill", "white");
+  master.appendChild(bg);
+
+  const style = document.createElementNS(NS, "style");
+  style.textContent = `
+    .node circle { stroke: white; stroke-width: 1.7; }
+    .node.zero circle { stroke: #888; stroke-width: 1.5; stroke-dasharray: 4 3; }
+    .node-num { fill: white; font-size: 22px; font-weight: 800; text-anchor: middle; dominant-baseline: central; font-family: Arial; }
+    .node.zero .node-num { fill: #555; font-size: 18px; }
+    .node-lbl { fill: #1a1a1a; font-size: 22px; font-weight: 600; font-family: Arial; text-anchor: middle; }
+    .node.zero .node-lbl { fill: #6b6b6b; font-weight: 500; }
+    .edge { fill: none; stroke-linecap: round; opacity: .55; }
+    .edge-pos { stroke: #a2142f; }
+    .edge-neg { stroke: #a2142f; }
+    .edge-sim { stroke-dasharray: 6 4; opacity: .45; }
+    .edge-label { font-size: 20px; font-weight: 700; paint-order: stroke; stroke: white; stroke-width: 4.5px; font-family: Arial; }
+    .edge-label-pos { fill: #a2142f; }
+    .edge-label-neg { fill: #a2142f; }
+    .composite-title { font-size: 42px; font-weight: 800; text-anchor: middle; font-family: Arial; fill: #111; }
+    .composite-panel-title { font-size: 34px; font-weight: 800; text-anchor: middle; font-family: Arial; fill: #111; }
+    .composite-sub { font-size: 22px; font-weight: 600; text-anchor: middle; font-family: Arial; fill: #384049; }
+  `;
+  master.appendChild(style);
+
+  const mainTitle = document.createElementNS(NS, "text");
+  mainTitle.setAttribute("x", W/2);
+  mainTitle.setAttribute("y", PAD + 50);
+  mainTitle.setAttribute("class", "composite-title");
+  mainTitle.textContent = "2026 Iran War — Lead-Lag Networks — All 9 Economic Sub-topics — 4 Languages";
+  master.appendChild(mainTitle);
+
+  const subTitle = document.createElementNS(NS, "text");
+  subTitle.setAttribute("x", W/2);
+  subTitle.setAttribute("y", PAD + 90);
+  subTitle.setAttribute("class", "composite-sub");
+  const cV = parseFloat(controls.corr.value).toFixed(2);
+  const lV = parseInt(controls.lead.value);
+  subTitle.textContent = `|r| ≥ ${cV}  ·  max lag ≤ ${lV}d  ·  zero-count nodes shown without edges  ·  v3 dataset, Jan–Apr 2026`;
+  master.appendChild(subTitle);
+
+  LANGS.forEach((lang, i) => {
+    const col = i % 2, row = Math.floor(i / 2);
+    const px = PAD + col * (PW + PAD);
+    const py = PAD + HEADER + row * (PH + PAD + INNER_HEAD) + INNER_HEAD;
+
+    const pt = document.createElementNS(NS, "text");
+    pt.setAttribute("x", px + PW/2);
+    pt.setAttribute("y", py - 14);
+    pt.setAttribute("class", "composite-panel-title");
+    pt.textContent = lang;
+    master.appendChild(pt);
+
+    const cloneSvg = panelState[lang].svg.cloneNode(true);
+    cloneSvg.setAttribute("x", px);
+    cloneSvg.setAttribute("y", py);
+    cloneSvg.setAttribute("width",  PW);
+    cloneSvg.setAttribute("height", PH);
+    master.appendChild(cloneSvg);
+  });
+
+  const svgStr = new XMLSerializer().serializeToString(master);
+  const blob   = new Blob([svgStr], {type: "image/svg+xml;charset=utf-8"});
+  const url    = URL.createObjectURL(blob);
+  const img    = new Image();
+  img.onload = () => {
+    const scale = 2;
+    const c = document.createElement("canvas");
+    c.width  = W * scale;
+    c.height = H * scale;
+    const ctx = c.getContext("2d");
+    ctx.fillStyle = "white";
+    ctx.fillRect(0, 0, c.width, c.height);
+    ctx.drawImage(img, 0, 0, c.width, c.height);
+    URL.revokeObjectURL(url);
+    const a = document.createElement("a");
+    a.href = c.toDataURL("image/png");
+    a.download = `fig11_subtopic_2x2_r${cV.replace(".","p")}_lag${lV}.png`;
+    a.click();
+  };
+  img.src = url;
+});
+
+renderAll();
+</script>
+</body>
+</html>
